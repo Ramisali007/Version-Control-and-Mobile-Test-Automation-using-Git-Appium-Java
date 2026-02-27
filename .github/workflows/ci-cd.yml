@@ -38,22 +38,30 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
-      # Install Maven dependencies
+      # Install Maven dependencies and compile
       - name: Install Dependencies
         run: mvn clean install -DskipTests
       
-      # Compile the project
+      # Compile the project (ensures code quality)
       - name: Compile Project
-        run: mvn compile
+        run: mvn test-compile
       
-      # Run tests (for CI, we'll skip actual Appium tests as they need emulator/device)
-      - name: Run Tests
-        run: mvn test -DskipTests=true || true
-        continue-on-error: true
+      # Validate project structure
+      - name: Validate Project
+        run: mvn validate
       
       # Package the application
       - name: Package Application
         run: mvn package -DskipTests
+      
+      # Note: Actual test execution requires physical device/emulator
+      # Tests should be run locally with proper Appium setup
+      - name: Build Status Message
+        run: |
+          echo "✅ Build successful!"
+          echo "📱 Appium tests require Android device/emulator"
+          echo "🧪 Run tests locally with: mvn test"
+          echo "✨ CI validates code compilation and structure"
       
       # Upload test reports as artifacts
       - name: Upload Test Reports

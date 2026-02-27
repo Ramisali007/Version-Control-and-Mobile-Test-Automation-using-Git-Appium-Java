@@ -20,8 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <appium.version>9.1.0</appium.version>
         <testng.version>7.9.0</testng.version>
-        <!-- Align Selenium with what Appium 9.1.0 needs to avoid dual-version conflict -->
-        <selenium.version>4.41.0</selenium.version>
+        <!-- Selenium is managed transitively by Appium java-client 9.1.0 -->
         <log4j.version>2.23.0</log4j.version>
         <extentreports.version>5.1.1</extentreports.version>
     </properties>
@@ -32,13 +31,6 @@
             <groupId>io.appium</groupId>
             <artifactId>java-client</artifactId>
             <version>${appium.version}</version>
-        </dependency>
-
-        <!-- Selenium WebDriver -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>${selenium.version}</version>
         </dependency>
 
         <!-- TestNG -->

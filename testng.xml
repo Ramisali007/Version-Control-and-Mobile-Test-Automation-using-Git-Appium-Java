@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Mobile Test Automation Suite" parallel="false" thread-count="1" verbose="1">
+    <test name="Calculator App Tests">
+        <classes>
+            <class name="com.ramis.tests.CalculatorTest"/>
+            <class name="com.ramis.tests.LoginTest"/>
+            <class name="com.ramis.tests.NavigationTest"/>
+        </classes>
+    </test>
+</suite>

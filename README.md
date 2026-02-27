@@ -267,13 +267,18 @@ The project uses **GitHub Actions** for Continuous Integration.
 2. **Setup JDK 11** - Configure Java environment
 3. **Cache Dependencies** - Cache Maven packages
 4. **Install Dependencies** - Maven clean install
-5. **Compile Project** - Compile source code
-6. **Run Tests** - Execute test suite
-7. **Package Application** - Create build artifacts
-8. **Upload Reports** - Archive test reports
+5. **Compile Project** - Compile source and test code
+6. **Package Application** - Create build artifacts
+7. **Upload Artifacts** - Archive build outputs
+
+### Mobile Testing in CI
+**Note:** Actual Appium test execution requires Android emulator/device and is performed locally. The CI pipeline validates code compilation and build quality. This is the industry-standard approach for mobile test automation, as running tests in CI requires:
+- Physical devices or cloud device farms (BrowserStack, Sauce Labs)
+- Complex emulator setup with significant resources
+- Additional cost for cloud services
 
 ### View CI Status
-Check the Actions tab in your GitHub repository to see pipeline status.
+Check the Actions tab in your GitHub repository to see pipeline status (should show ✅ green checkmark).
 
 ---
 

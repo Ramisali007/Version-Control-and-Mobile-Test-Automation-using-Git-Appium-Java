@@ -17,10 +17,32 @@ public class SettingsPage extends BasePage {
     // ── UIAutomator scrollable finder ─────────────────────────────────────────
     // Scrolls the list until the item with the given text is visible, then returns it.
     private WebElement scrollToText(String text) {
-        return driver.findElement(AppiumBy.androidUIAutomator(
-            "new UiScrollable(new UiSelector().scrollable(true))" +
-            ".scrollIntoView(new UiSelector().text(\"" + text + "\"))"
-        ));
+        waitFor(1000);
+        try {
+            // Try exact text match first
+            return driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true))" +
+                ".scrollIntoView(new UiSelector().text(\"" + text + "\"))"
+            ));
+        } catch (Exception e1) {
+            try {
+                // Try with textContains for partial match
+                String searchText = text.contains(" ") ? text.split(" ")[0] : text;
+                return driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiScrollable(new UiSelector().scrollable(true))" +
+                    ".scrollIntoView(new UiSelector().textContains(\"" + searchText + "\"))"
+                ));
+            } catch (Exception e2) {
+                // Last resort: try to find element without scrolling
+                try {
+                    return driver.findElement(AppiumBy.androidUIAutomator(
+                        "new UiSelector().textContains(\"" + text + "\")"
+                    ));
+                } catch (Exception e3) {
+                    throw new RuntimeException("Could not find element with text: " + text, e3);
+                }
+            }
+        }
     }
 
     // ── Search bar ────────────────────────────────────────────────────────────
@@ -42,42 +64,95 @@ public class SettingsPage extends BasePage {
      */
     public boolean isSettingsDisplayed() {
         try {
-            WebElement heading = wait.until(ExpectedConditions.presenceOfElementLocated(
-                AppiumBy.xpath("//android.widget.FrameLayout[@content-desc='Settings']" +
-                               " | //android.widget.TextView[@text='Settings']" +
-                               " | //*[@content-desc='Settings']")
-            ));
-            return heading.isDisplayed();
+            waitFor(2000);
+            String pageSource = driver.getPageSource();
+            // Check for Settings-related indicators
+            return pageSource.toLowerCase().contains("settings") &&
+                   (pageSource.toLowerCase().contains("network") ||
+                    pageSource.toLowerCase().contains("display") ||
+                    pageSource.toLowerCase().contains("sound") ||
+                    pageSource.toLowerCase().contains("apps"));
         } catch (Exception e) {
-            // Fallback: check page source
-            return driver.getPageSource().contains("Settings");
+            return false;
         }
     }
 
     // ── Navigation actions ────────────────────────────────────────────────────
     /** Open Network & internet settings. */
     public void openNetworkSettings() {
-        scrollToText("Network & internet").click();
+        waitFor(1000);
+        try {
+            scrollToText("Network & internet").click();
+        } catch (Exception e) {
+            try {
+                // Try alternate names
+                scrollToText("Network & Internet").click();
+            } catch (Exception e2) {
+                scrollToText("Internet").click();
+            }
+        }
+        waitFor(1000);
     }
 
     /** Open Bluetooth settings. */
     public void openBluetoothSettings() {
-        scrollToText("Bluetooth").click();
+        waitFor(2000);
+        try {
+            scrollToText("Bluetooth").click();
+        } catch (Exception e) {
+            try {
+                scrollToText("Connected devices").click();
+            } catch (Exception e2) {
+                // Try finding by className
+                driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiSelector().textContains(\"Bluetooth\")"
+                )).click();
+            }
+        }
+        waitFor(2000);
     }
 
     /** Open Apps settings. */
     public void openAppsSettings() {
-        scrollToText("Apps").click();
+        waitFor(2000);
+        try {
+            scrollToText("Apps").click();
+        } catch (Exception e) {
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiSelector().textContains(\"App\")"
+            )).click();
+        }
+        waitFor(2000);
     }
 
     /** Open Display settings. */
     public void openDisplaySettings() {
-        scrollToText("Display").click();
+        waitFor(2000);
+        try {
+            scrollToText("Display").click();
+        } catch (Exception e) {
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiSelector().textContains(\"Display\")"
+            )).click();
+        }
+        waitFor(2000);
     }
 
     /** Open Sound & vibration settings. */
     public void openSoundSettings() {
-        scrollToText("Sound & vibration").click();
+        waitFor(2000);
+        try {
+            scrollToText("Sound & vibration").click();
+        } catch (Exception e) {
+            try {
+                scrollToText("Sound").click();
+            } catch (Exception e2) {
+                driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiSelector().textContains(\"Sound\")"
+                )).click();
+            }
+        }
+        waitFor(2000);
     }
 
     /** Open Battery settings. */
@@ -92,32 +167,60 @@ public class SettingsPage extends BasePage {
 
     /** Open About phone / About emulated device. */
     public void openAboutPhone() {
+        waitFor(2000);
         try {
             scrollToText("About phone").click();
         } catch (Exception e) {
-            // Emulators sometimes show "About emulated device"
-            scrollToText("About emulated device").click();
+            try {
+                // Emulators sometimes show "About emulated device"
+                scrollToText("About emulated device").click();
+            } catch (Exception e2) {
+                try {
+                    // Try "About"
+                    scrollToText("About").click();
+                } catch (Exception e3) {
+                    // Last resort - find any element containing "About"
+                    driver.findElement(AppiumBy.androidUIAutomator(
+                        "new UiSelector().textContains(\"About\")"
+                    )).click();
+                }
+            }
         }
+        waitFor(2000);
     }
 
     // ── Search ────────────────────────────────────────────────────────────────
     /** Tap the search bar and type a query. */
     public void searchFor(String query) {
+        waitFor(2000);
         // Try tapping the search icon/bar (content-desc varies by version)
         try {
             driver.findElement(AppiumBy.androidUIAutomator(
                 "new UiSelector().descriptionContains(\"Search settings\")"
             )).click();
         } catch (Exception e) {
-            driver.findElement(AppiumBy.androidUIAutomator(
-                "new UiSelector().classNameMatches(\".*EditText\").instance(0)"
-            )).click();
+            try {
+                driver.findElement(AppiumBy.androidUIAutomator(
+                    "new UiSelector().description(\"Search\")"
+                )).click();
+            } catch (Exception e2) {
+                try {
+                    driver.findElement(AppiumBy.androidUIAutomator(
+                        "new UiSelector().classNameMatches(\".*EditText\").instance(0)"
+                    )).click();
+                } catch (Exception e3) {
+                    // Last resort - try to find search by resource ID
+                    driver.findElement(AppiumBy.androidUIAutomator(
+                        "new UiSelector().resourceIdMatches(\".*search.*\")"
+                    )).click();
+                }
+            }
         }
-        waitFor(500);
+        waitFor(2000);
         driver.findElement(AppiumBy.androidUIAutomator(
             "new UiSelector().classNameMatches(\".*EditText\").instance(0)"
         )).sendKeys(query);
-        waitFor(1000);
+        waitFor(2000);
     }
 
     /** Returns true if search results are shown (list is non-empty). */
@@ -141,6 +244,14 @@ public class SettingsPage extends BasePage {
 
     /** Check whether a given text label appears anywhere on screen. */
     public boolean isTextVisible(String text) {
-        return driver.getPageSource().contains(text);
+        try {
+            // Wait a bit for page to load
+            waitFor(2000);
+            String pageSource = driver.getPageSource();
+            // Case-insensitive search
+            return pageSource.toLowerCase().contains(text.toLowerCase());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

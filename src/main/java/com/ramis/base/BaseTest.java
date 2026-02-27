@@ -78,10 +78,25 @@ public class BaseTest {
         options.setAppActivity(ConfigReader.getProperty("appActivity"));
         options.setNoReset(true);
         options.setNewCommandTimeout(Duration.ofSeconds(60));
+        
+        // Android 13 compatibility options
+        options.setCapability("ignoreHiddenApiPolicyError", true);
+        options.setCapability("disableWindowAnimation", true);
+        options.setCapability("uiautomator2ServerLaunchTimeout", 120000);
+        options.setCapability("uiautomator2ServerInstallTimeout", 120000);
+        options.setCapability("adbExecTimeout", 120000);
+        options.setCapability("androidInstallTimeout", 120000);
 
         String appiumServerUrl = ConfigReader.getProperty("appiumServer");
         driverThread.set(new AndroidDriver(new URL(appiumServerUrl), options));
         driverThread.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        // Wait for Settings app to fully load
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         System.out.println("Driver initialized successfully");
     }
@@ -107,6 +122,12 @@ public class BaseTest {
 
         if (driver != null) {
             driver.quit();
+            // Wait for session cleanup
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
         driverThread.remove();
         testThread.remove();

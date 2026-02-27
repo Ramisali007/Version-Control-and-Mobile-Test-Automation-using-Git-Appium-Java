@@ -11,7 +11,7 @@
       For a single emulator/device run, change parallel="methods" to parallel="false".
       For full parallel execution, connect N devices and set thread-count="N".
 -->
-<suite name="Mobile Test Automation Suite" parallel="methods" thread-count="2" verbose="2">
+<suite name="Mobile Test Automation Suite" parallel="false" thread-count="1" verbose="2">
 
     <test name="Settings App Tests - 10 Functional Tests">
         <classes>

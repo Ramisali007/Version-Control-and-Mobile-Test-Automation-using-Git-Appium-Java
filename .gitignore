@@ -54,10 +54,13 @@ local.properties
 test-output/
 testng-results.xml
 
-# Extent Reports
+# Extent Reports (generated test artifacts - exclude from Git)
 extent-reports/
 ExtentReports/
 screenshots/
+
+# But allow documentation screenshots for submission
+!docs/screenshots/
 
 # OS Files
 .DS_Store

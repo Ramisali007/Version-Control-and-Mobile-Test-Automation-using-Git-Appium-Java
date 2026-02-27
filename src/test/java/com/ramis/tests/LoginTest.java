@@ -18,7 +18,7 @@ public class LoginTest extends BaseTest {
     
     @BeforeMethod
     public void initializePage() {
-        loginPage = new LoginPage(driver);
+        loginPage = new LoginPage(getDriver());
     }
     
     @Test(priority = 1, description = "Verify login with valid credentials", enabled = false)

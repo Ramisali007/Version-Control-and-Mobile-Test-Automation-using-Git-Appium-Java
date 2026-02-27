@@ -10,10 +10,11 @@
 This is a comprehensive **Mobile Test Automation Framework** built using **Appium**, **Java**, and **TestNG** for automated testing of Android mobile applications. The framework follows industry best practices including **Page Object Model (POM)** design pattern and includes **Continuous Integration** using GitHub Actions.
 
 ### 👨‍🎓 Student Information
-- **Name:** Ramis Ali
-- **Roll Number:** 22f-3703
-- **Class:** BSSE-8B
-- **GitHub:** [Ramisali007](https://github.com/Ramisali007)
+
+| # | Name | Roll Number | Class | GitHub |
+|---|------|-------------|-------|--------|
+| 1 | Ramis Ali | 22f-3703 | BSSE-8B | [@Ramisali007](https://github.com/Ramisali007) |
+| 2 | *(Team Member Name)* | *(Roll Number)* | BSSE-8B | *(GitHub Profile)* |
 
 ---
 
@@ -25,7 +26,7 @@ This is a comprehensive **Mobile Test Automation Framework** built using **Appiu
 | Maven | 3.x | Build Tool & Dependency Management |
 | Appium | 9.1.0 | Mobile Automation Framework |
 | TestNG | 7.9.0 | Testing Framework |
-| Selenium | 4.18.1 | WebDriver Support |
+| Selenium | 4.41.0 | WebDriver Support |
 | ExtentReports | 5.1.1 | Test Reporting |
 | GitHub Actions | - | CI/CD Pipeline |
 
@@ -88,16 +89,25 @@ mobile-test-automation/
 - Follows OOP principles
 
 ### 2. **Test Cases** (10+ Implemented)
-1. ✅ Addition Operation Test
-2. ✅ Subtraction Operation Test
-3. ✅ Multiplication Operation Test
-4. ✅ Division Operation Test
-5. ✅ Decimal Number Addition Test
-6. ✅ Large Number Multiplication Test
-7. ✅ Clear Function Test
-8. ✅ Delete Function Test
-9. ✅ Division by Zero Test
-10. ✅ Multiple Operations Test
+
+#### Primary Suite — Android Settings App (`testng.xml`)
+1. ✅ TC-01: Settings app launches and main screen is displayed
+2. ✅ TC-02: Network & internet option visible on main screen
+3. ✅ TC-03: Navigation to Network & internet settings
+4. ✅ TC-04: Back navigation returns to main Settings screen
+5. ✅ TC-05: Navigation to Bluetooth settings
+6. ✅ TC-06: Navigation to Apps settings
+7. ✅ TC-07: Navigation to Display settings
+8. ✅ TC-08: Navigation to Sound & vibration settings
+9. ✅ TC-09: Search functionality in Settings
+10. ✅ TC-10: Navigation to About phone screen
+
+#### Additional POM Demo — Android Calculator App (`CalculatorTest.java`)
+> ⚠️ Requires `appPackage=com.android.calculator2` in `config.properties` to run.
+
+- Addition, Subtraction, Multiplication, Division
+- Decimal addition, Large number multiplication
+- Clear / Delete / Division-by-zero / Multiple operations
 
 ### 3. **Framework Capabilities**
 - ✅ Configurable Appium settings

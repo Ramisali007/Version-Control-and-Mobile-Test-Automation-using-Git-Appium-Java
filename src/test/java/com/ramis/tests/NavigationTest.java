@@ -18,7 +18,7 @@ public class NavigationTest extends BaseTest {
     
     @BeforeMethod
     public void initializePage() {
-        homePage = new HomePage(driver);
+        homePage = new HomePage(getDriver());
     }
     
     @Test(priority = 1, description = "Verify home page is displayed", enabled = false)

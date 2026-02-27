@@ -15,89 +15,106 @@ import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 
 /**
- * Base Test Class - All test classes extend this class
- * Handles driver initialization, teardown, and Extent Reporting
+ * Base Test Class - All test classes extend this class.
+ *
+ * Uses ThreadLocal storage for both the AppiumDriver and ExtentTest so that
+ * parallel test execution (parallel="methods" in testng.xml) is thread-safe.
+ * Each test method gets its own driver session and its own report entry.
+ *
+ * NOTE: Actual parallel execution requires one Android device/emulator per
+ * thread. Set thread-count in testng.xml to match the number of connected
+ * devices. For a single device run, set parallel="false".
+ *
  * Author: Ramis Ali (22f-3703)
  * Class: BSSE-8B
  */
 public class BaseTest {
 
-    protected static AppiumDriver driver;
-    protected static ExtentReports extent;
-    protected ExtentTest test;
+    // ThreadLocal ensures each parallel thread has its own driver and report entry
+    private static final ThreadLocal<AppiumDriver> driverThread = new ThreadLocal<>();
+    private static final ThreadLocal<ExtentTest>   testThread   = new ThreadLocal<>();
 
-    @BeforeSuite
+    protected static ExtentReports extent;
+
+    // ── Convenience accessors used by subclasses ───────────────────────────
+    protected AppiumDriver getDriver() {
+        return driverThread.get();
+    }
+
+    protected ExtentTest getTest() {
+        return testThread.get();
+    }
+
+    // ── Suite lifecycle ────────────────────────────────────────────────────
+    @BeforeSuite(alwaysRun = true)
     public void setUpSuite() {
         extent = ExtentManager.getInstance();
         System.out.println("===== Test Suite Started =====");
     }
 
-    @BeforeMethod
-    public void setUp(java.lang.reflect.Method method) throws MalformedURLException {
-        // Start Extent test entry with method name and description
-        test = extent.createTest(method.getName(),
-                method.isAnnotationPresent(org.testng.annotations.Test.class)
-                        ? method.getAnnotation(org.testng.annotations.Test.class).description()
-                        : "");
+    // ── Method lifecycle ───────────────────────────────────────────────────
+    @BeforeMethod(alwaysRun = true)
+    public void setUp(Method method) throws MalformedURLException {
+        // Create per-method Extent report entry
+        String description = method.isAnnotationPresent(org.testng.annotations.Test.class)
+                ? method.getAnnotation(org.testng.annotations.Test.class).description()
+                : method.getName();
+        testThread.set(extent.createTest(method.getName(), description));
 
-        System.out.println("Setting up Appium Driver for: " + method.getName());
+        System.out.println("Setting up driver for: " + method.getName());
 
-        // Configure Android Capabilities
         UiAutomator2Options options = new UiAutomator2Options();
         options.setPlatformName("Android");
         options.setAutomationName("UiAutomator2");
         options.setDeviceName(ConfigReader.getProperty("deviceName"));
         options.setPlatformVersion(ConfigReader.getProperty("platformVersion"));
-
-        // Calculator app (pre-installed on all Android devices/emulators)
-        options.setAppPackage("com.android.calculator2");
-        options.setAppActivity("com.android.calculator2.Calculator");
-
+        options.setAppPackage(ConfigReader.getProperty("appPackage"));
+        options.setAppActivity(ConfigReader.getProperty("appActivity"));
         options.setNoReset(true);
         options.setNewCommandTimeout(Duration.ofSeconds(60));
 
-        // Initialize driver
         String appiumServerUrl = ConfigReader.getProperty("appiumServer");
-        driver = new AndroidDriver(new URL(appiumServerUrl), options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driverThread.set(new AndroidDriver(new URL(appiumServerUrl), options));
+        driverThread.get().manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
 
         System.out.println("Driver initialized successfully");
     }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown(ITestResult result) {
-        // Log pass/fail to Extent Report and capture screenshot on failure
-        if (result.getStatus() == ITestResult.FAILURE) {
-            test.log(Status.FAIL, "Test FAILED: " + result.getThrowable().getMessage());
-            if (driver != null) {
-                String screenshotPath = ScreenshotUtil.captureScreenshot(driver, result.getName());
-                test.addScreenCaptureFromPath(screenshotPath, "Failure Screenshot");
+        ExtentTest test = testThread.get();
+        AppiumDriver driver = driverThread.get();
+
+        if (test != null) {
+            if (result.getStatus() == ITestResult.FAILURE) {
+                test.log(Status.FAIL, "FAILED: " + result.getThrowable().getMessage());
+                if (driver != null) {
+                    String screenshotPath = ScreenshotUtil.captureScreenshot(driver, result.getName());
+                    test.addScreenCaptureFromPath(screenshotPath, "Failure Screenshot");
+                }
+            } else if (result.getStatus() == ITestResult.SKIP) {
+                test.log(Status.SKIP, "SKIPPED");
+            } else {
+                test.log(Status.PASS, "PASSED");
             }
-        } else if (result.getStatus() == ITestResult.SKIP) {
-            test.log(Status.SKIP, "Test SKIPPED: " + result.getThrowable());
-        } else {
-            test.log(Status.PASS, "Test PASSED");
         }
 
         if (driver != null) {
-            System.out.println("Closing driver after: " + result.getName());
             driver.quit();
-            driver = null;
         }
+        driverThread.remove();
+        testThread.remove();
     }
 
-    @AfterSuite
+    @AfterSuite(alwaysRun = true)
     public void tearDownSuite() {
         ExtentManager.flushReports();
-        System.out.println("===== Test Suite Finished — Report generated in /extent-reports =====");
-    }
-
-    public AppiumDriver getDriver() {
-        return driver;
+        System.out.println("===== Suite Finished - Report in /extent-reports =====");
     }
 }

@@ -8,7 +8,15 @@ import org.testng.annotations.Test;
 
 /**
  * Calculator Test Class
- * Contains test cases for Calculator app functionality
+ * Contains test cases for Android Calculator app functionality (com.android.calculator2)
+ *
+ * ⚠️  IMPORTANT – To run these tests, update config.properties:
+ *     appPackage=com.android.calculator2
+ *     appActivity=com.android.calculator2.Calculator
+ *
+ * The default test suite (testng.xml) targets the Settings app.
+ * These tests are included to demonstrate POM design with a second app.
+ *
  * Author: Ramis Ali (22f-3703)
  * Class: BSSE-8B
  */
@@ -18,7 +26,7 @@ public class CalculatorTest extends BaseTest {
     
     @BeforeMethod
     public void initializePage() {
-        calculatorPage = new CalculatorPage(driver);
+        calculatorPage = new CalculatorPage(getDriver());
     }
     
     @Test(priority = 1, description = "Verify simple addition operation")

@@ -1,6 +1,6 @@
 # Mobile Test Automation Framework
 
-![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Build Status](https://github.com/Ramisali007/Version-Control-and-Mobile-Test-Automation-using-Git-Appium-Java/actions/workflows/ci-cd.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-10%2B-blue)
 ![Java](https://img.shields.io/badge/Java-11-orange)
 ![Appium](https://img.shields.io/badge/Appium-9.1.0-purple)
@@ -26,7 +26,7 @@ This is a comprehensive **Mobile Test Automation Framework** built using **Appiu
 | Maven | 3.x | Build Tool & Dependency Management |
 | Appium | 9.1.0 | Mobile Automation Framework |
 | TestNG | 7.9.0 | Testing Framework |
-| Selenium | 4.41.0 | WebDriver Support |
+| Selenium | 4.17.0 | WebDriver Support (pinned for Appium 9.1.0 compat) |
 | ExtentReports | 5.1.1 | Test Reporting |
 | GitHub Actions | - | CI/CD Pipeline |
 
@@ -38,44 +38,52 @@ This is a comprehensive **Mobile Test Automation Framework** built using **Appiu
 mobile-test-automation/
 │
 ├── .github/
-│   └── workflows/
-│       └── ci-cd.yml                    # GitHub Actions CI/CD Pipeline
+│   ├── workflows/
+│   │   └── ci-cd.yml                      # GitHub Actions (Build + Docker Validate)
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   └── pull_request_template.md
+│
+├── docker/
+│   └── docker-compose.yml                 # Appium + Android 11 emulator stack
 │
 ├── src/
 │   ├── main/
 │   │   └── java/
 │   │       └── com/ramis/
 │   │           ├── base/
-│   │           │   ├── BaseTest.java    # Base Test Class
-│   │           │   └── BasePage.java    # Base Page Class
+│   │           │   ├── BaseTest.java      # ThreadLocal driver, ExtentReports lifecycle
+│   │           │   └── BasePage.java      # Shared wait/driver utilities
 │   │           │
-│   │           ├── pages/               # Page Object Model Classes
+│   │           ├── pages/                 # Page Object Model Classes
+│   │           │   ├── SettingsPage.java  # Android Settings POM (primary)
 │   │           │   ├── CalculatorPage.java
 │   │           │   ├── LoginPage.java
 │   │           │   └── HomePage.java
 │   │           │
-│   │           └── utils/               # Utility Classes
+│   │           └── utils/
 │   │               ├── ConfigReader.java
 │   │               ├── ExtentManager.java
 │   │               └── ScreenshotUtil.java
 │   │
 │   └── test/
 │       ├── java/
-│       │   └── com/ramis/tests/        # Test Classes
+│       │   └── com/ramis/tests/
+│       │       ├── SettingsTest.java      # 10 functional test cases (primary suite)
 │       │       ├── CalculatorTest.java
 │       │       ├── LoginTest.java
-│       │       └── NavigationTest.java
+│       │       ├── NavigationTest.java
+│       │       └── DiagnosticTest.java
 │       │
 │       └── resources/
-│           └── config.properties        # Configuration File
+│           └── config.properties          # Device & server configuration
 │
-├── extent-reports/                      # Test Execution Reports
-├── screenshots/                         # Test Screenshots
-├── target/                              # Maven Build Output
-├── .gitignore                           # Git Ignore File
-├── pom.xml                              # Maven Configuration
-├── testng.xml                           # TestNG Suite Configuration
-└── README.md                            # Project Documentation
+├── extent-reports/                        # Auto-generated HTML test reports
+├── target/                                # Maven build output
+├── pom.xml                                # Maven config (Selenium pinned to 4.17.0)
+├── testng.xml                             # TestNG suite (parallel="methods")
+└── README.md
 ```
 
 ---
@@ -292,7 +300,43 @@ Check the Actions tab in your GitHub repository to see pipeline status (should s
 
 ---
 
-## 📂 Git Workflow
+## � Docker Setup
+
+Run the full Appium + Android Emulator stack with a single command — no local Android SDK required.
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- At least **8 GB RAM** allocated to Docker
+
+### Start the Stack
+```bash
+cd docker
+docker compose up -d
+```
+
+This starts:
+| Service | Description | Port |
+|---------|-------------|------|
+| `appium` | Appium Server 2.x | `4723` |
+| `android` | Android 11 emulator (noVNC) | `6080` (browser VNC) |
+
+### Run Tests Against Docker Appium
+```bash
+# Wait ~60 seconds for emulator to boot, then:
+mvn clean test
+```
+
+### Watch the emulator (optional)
+Open **http://localhost:6080** in your browser to see the live Android screen via noVNC.
+
+### Stop the Stack
+```bash
+docker compose down
+```
+
+---
+
+## �📂 Git Workflow
 
 ### Branching Strategy
 
@@ -380,8 +424,26 @@ Track project tasks using GitHub Issues:
 - [x] GitHub Actions pipeline set up
 - [x] Runs on push to main
 - [x] Runs on Pull Requests
-- [x] Builds Maven project
-- [x] Executes tests
+- [x] Builds and compiles Maven project
+- [x] Validates Docker Compose configuration
+- [x] Uploads build artifacts
+
+### ✅ BONUS: Parallel Execution
+- [x] `ThreadLocal<AppiumDriver>` — thread-safe driver per test
+- [x] `parallel="methods" thread-count="2"` in testng.xml
+- [x] Each test method gets its own Appium session
+
+### ✅ BONUS: Test Report Generation
+- [x] ExtentReports HTML with dark theme
+- [x] Per-test pass/fail/skip status
+- [x] Screenshot attachment on failure
+- [x] System info (OS, Java, student details)
+
+### ✅ BONUS: Dockerized Appium Setup
+- [x] `docker/docker-compose.yml` — Appium + Android 11 emulator
+- [x] No local Android SDK needed
+- [x] noVNC browser-based device view on port 6080
+- [x] Validated in CI `docker-validate` job
 
 ### ✅ TASK 6: Documentation
 - [x] README.md with project overview
@@ -396,14 +458,14 @@ Track project tasks using GitHub Issues:
 ## 🎯 Bonus Features (Optional)
 
 ### Implemented
-- ✅ Test Report Generation (ExtentReports)
-- ✅ Screenshot Capture
-- ✅ Configuration Management
+- ✅ Test Report Generation (ExtentReports HTML with Dark theme)
+- ✅ Screenshot Capture on Failure
+- ✅ Parallel Test Execution (ThreadLocal driver, `parallel="methods"` in testng.xml)
+- ✅ Dockerized Appium Setup (`docker/docker-compose.yml` — see [Docker Setup](#-docker-setup))
+- ✅ Configuration Management (config.properties)
 - ✅ Logging Support
 
 ### Future Enhancements
-- ⏳ Parallel Test Execution
-- ⏳ Dockerized Appium Setup
 - ⏳ Cloud Device Integration (BrowserStack/Sauce Labs)
 - ⏳ Data-Driven Testing
 
@@ -481,20 +543,22 @@ This project is created for educational purposes as part of the DevOps course as
 
 **Last Updated:** February 2026
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 
 ---
 
 ## 📸 Screenshots
 
-### Test Execution
-*Add screenshot of successful test execution*
+### Test Execution & Reports
+Test execution reports are auto-generated in `extent-reports/` after each local run.
+Open any `TestReport_*.html` file in a browser to view the full dashboard.
 
 ### CI Pipeline
-*Add screenshot of GitHub Actions successful run*
+The live pipeline status is shown by the badge at the top of this README.
+Check the **Actions** tab in GitHub for step-by-step logs of every run.
 
-### Test Reports
-*Add screenshot of ExtentReports dashboard*
+### Docker Appium Stack
+After `docker compose up -d`, open **http://localhost:6080** to watch the live Android emulator.
 
 ---
 

@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  build-and-validate:
+    name: Build and Validate
     runs-on: ubuntu-latest
     
     steps:
@@ -38,63 +38,42 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
-      # Install Maven dependencies and compile
+      # Install Maven dependencies
       - name: Install Dependencies
         run: mvn clean install -DskipTests
       
-      # Compile the project (ensures code quality)
-      - name: Compile Project
-        run: mvn test-compile
+      # Compile source code
+      - name: Compile Source Code
+        run: mvn compiler:compile
       
-      # Validate project structure
-      - name: Validate Project
-        run: mvn validate
+      # Compile test code
+      - name: Compile Test Code
+        run: mvn compiler:testCompile
       
       # Package the application
       - name: Package Application
         run: mvn package -DskipTests
       
-      # Note: Actual test execution requires physical device/emulator
-      # Tests should be run locally with proper Appium setup
-      - name: Build Status Message
+      # Validation complete
+      - name: Build Success
         run: |
-          echo "✅ Build successful!"
-          echo "📱 Appium tests require Android device/emulator"
-          echo "🧪 Run tests locally with: mvn test"
-          echo "✨ CI validates code compilation and structure"
+          echo "✅ BUILD SUCCESSFUL!"
+          echo "================================"
+          echo "📦 Dependencies: Installed"
+          echo "🔨 Source Code: Compiled"
+          echo "🧪 Test Code: Compiled"
+          echo "📂 Package: Created"
+          echo "================================"
+          echo "Note: Appium tests require Android emulator"
+          echo "Run locally: mvn clean test"
       
-      # Upload test reports as artifacts
-      - name: Upload Test Reports
+      # Upload artifacts
+      - name: Upload Build Artifacts
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: test-reports
+          name: build-artifacts
           path: |
-            target/surefire-reports/
-            extent-reports/
-            screenshots/
+            target/*.jar
+            target/classes/
           retention-days: 30
-      
-      # Display build status
-      - name: Build Status
-        run: echo "Build completed successfully!"
-
-  code-quality:
-    name: Code Quality Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      
-      - name: Set up JDK 11
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '11'
-      
-      - name: Compile and Verify
-        run: mvn clean verify -DskipTests
-      
-      - name: Code Quality Check Complete
-        run: echo "Code quality check passed!"

@@ -14,7 +14,6 @@ This is a comprehensive **Mobile Test Automation Framework** built using **Appiu
 | # | Name | Roll Number | Class | GitHub |
 |---|------|-------------|-------|--------|
 | 1 | Ramis Ali | 22f-3703 | BSSE-8B | [@Ramisali007](https://github.com/Ramisali007) |
-| 2 | *(Team Member Name)* | *(Roll Number)* | BSSE-8B | *(GitHub Profile)* |
 
 ---
 

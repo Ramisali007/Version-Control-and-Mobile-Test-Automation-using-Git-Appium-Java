@@ -20,7 +20,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <appium.version>9.1.0</appium.version>
         <testng.version>7.9.0</testng.version>
-        <selenium.version>4.18.1</selenium.version>
+        <!-- Align Selenium with what Appium 9.1.0 needs to avoid dual-version conflict -->
+        <selenium.version>4.41.0</selenium.version>
         <log4j.version>2.23.0</log4j.version>
         <extentreports.version>5.1.1</extentreports.version>
     </properties>
@@ -99,9 +100,14 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.5</version>
                 <configuration>
+                    <!-- Run the full TestNG suite defined in testng.xml -->
                     <suiteXmlFiles>
                         <suiteXmlFile>testng.xml</suiteXmlFile>
                     </suiteXmlFiles>
+                    <!-- Fix: project on D:\ but JDK/Maven/dependencies on C:\
+                         JVM flag disables cross-drive URL classpath check so
+                         Surefire's manifest JAR can span multiple drive letters -->
+                    <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
                     <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
             </plugin>
